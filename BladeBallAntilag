@@ -1,0 +1,3 @@
+local workspace = game.Workspace
+local terrain = workspace.Terrain
+game.Lighting.FogEnd = 9e9
