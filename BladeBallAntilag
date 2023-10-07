@@ -1,3 +1,4 @@
 local workspace = game.Workspace
 local terrain = workspace.Terrain
 game.Lighting.FogEnd = 9e9
+game.Lighting:SetMinutesAfterMidnight(12 * 60)
