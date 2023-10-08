@@ -3,46 +3,65 @@ local function setSmoothPlastic(part)
         -- Check if the part is not a player's character
         if not part:IsDescendantOf(game.Players.LocalPlayer.Character) then
             part.Material = Enum.Material.SmoothPlastic -- Set material to SmoothPlastic
+            part.CastShadow = false -- Disable shadows
+            part.Reflectance = 0 -- Remove reflectance
         end
     end
 end
 
-local function removeEffects()
+local function revertToSmoothPlastic(part)
+    if part:IsA("BasePart") then
+        part.Material = Enum.Material.SmoothPlastic -- Revert material to SmoothPlastic
+            part.CastShadow = false -- Disable shadows
+            part.Reflectance = 0 -- Remove reflectance
+    end
+end
+
+local function removeWaterAndEffects()
     -- Remove water
-    game.Workspace.Terrain:ClearAllWater()
+    for _, descendant in ipairs(game.Workspace:GetDescendants()) do
+        if descendant:IsA("MeshPart") and descendant.Name == "Water" then
+            descendant:Destroy()
+        end
+    end
 
-    -- Remove fire, smoke, and sparkles
-    local effects = {"Fire", "Smoke", "Sparkles"}
-    for _, effectName in ipairs(effects) do
-        for _, effect in pairs(game.Workspace:FindPartsInRegion3(
-            Region3.new(Vector3.new(-5000, -5000, -5000), Vector3.new(5000, 5000, 5000)),
-            nil,
-            math.huge
-        )) do
-            if effect:IsA(effectName) then
-                effect:Destroy()
-            end
+    -- Remove fire, smoke, and sparkles effects
+    for _, effect in ipairs(game.Workspace:FindPartsInRegion3(
+        game.Workspace.CurrentCamera.CFrame.Position,
+        game.Workspace.CurrentCamera.CFrame.Position + game.Workspace.CurrentCamera.CFrame.LookVector * 100,
+        nil)) do
+        if effect:IsA("Fire") or effect:IsA("Smoke") or effect:IsA("Sparkles") then
+            effect:Destroy()
         end
     end
 end
 
-local function updateMaterials()
-    -- Get all parts in the Workspace
-    local parts = game.Workspace:GetDescendants()
-
-    -- Set all parts to SmoothPlastic
-    for _, part in ipairs(parts) do
-        setSmoothPlastic(part)
+local function updateMaterials(obj)
+    if obj:IsA("BasePart") then
+        setSmoothPlastic(obj)
     end
+end
+
+local function onDescendantAdded(descendant)
+    updateMaterials(descendant)
+    descendant.DescendantAdded:Connect(function(child)
+        updateMaterials(child)
+    end)
 end
 
 -- Initial run when the script is loaded
-updateMaterials()
-removeEffects()
+for _, part in ipairs(game.Workspace:GetDescendants()) do
+    updateMaterials(part)
+end
+
+removeWaterAndEffects()
 
 -- Update materials whenever a new part is added to the Workspace
-game.Workspace.DescendantAdded:Connect(function(descendant)
-    setSmoothPlastic(descendant)
+game.Workspace.DescendantAdded:Connect(onDescendantAdded)
+
+-- Revert materials whenever a texture is changed
+game.Workspace.DescendantChanged:Connect(function(descendant)
+    revertToSmoothPlastic(descendant)
 end)
 
 -- FPS and Ping Counter
