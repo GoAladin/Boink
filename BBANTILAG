@@ -7,6 +7,13 @@ local function setSmoothPlastic(part)
     end
 end
 
+local function updateMapMaterials()
+    -- Set all parts in the Workspace to SmoothPlastic
+    for _, part in ipairs(game.Workspace:GetDescendants()) do
+        setSmoothPlastic(part)
+    end
+end
+
 local function disableEffects()
     -- Disable water and water-related effects to reduce lag
     game.Workspace.Terrain:ClearAllWater()
@@ -29,24 +36,12 @@ local function disableEffects()
     settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 -- Set quality level to the lowest (Level01)
 end
 
-local function updateMapMaterials()
-    -- Get all parts in the Workspace
-    local parts = game.Workspace:GetDescendants()
-
-    -- Set all parts to SmoothPlastic
-    for _, part in ipairs(parts) do
-        setSmoothPlastic(part)
-    end
-end
-
 -- Initial run when the script is loaded
 updateMapMaterials()
 disableEffects()
 
 -- Update materials whenever a new part is added to the Workspace
-game.Workspace.DescendantAdded:Connect(function(descendant)
-    setSmoothPlastic(descendant)
-end)
+game.Workspace.DescendantAdded:Connect(setSmoothPlastic)
 
 -- FPS and Ping Counter
 local ScreenGui = Instance.new("ScreenGui")
