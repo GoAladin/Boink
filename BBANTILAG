@@ -57,16 +57,17 @@ Fps.TextColor3 = Color3.fromRGB(255, 255, 255)
 Fps.TextScaled = true
 Fps.TextSize = 14
 Fps.TextWrapped = true
+Fps.Position = UDim2.new(0, 10, 0, 10) -- Adjust position as needed
 Fps.Parent = ScreenGui
 
 local Ping = Instance.new("TextLabel")
 Ping.Size = UDim2.new(0, 125, 0, 25)
 Ping.Font = Enum.Font.Arcade
-Ping.TextColor3 = Color3.fromRGB(253, 253, 253)
+Ping.TextColor3 = Color3.fromRGB(255, 255, 255)
 Ping.TextScaled = true
 Ping.TextSize = 14
 Ping.TextWrapped = true
-Ping.Position = UDim2.new(0.700000048, 0, 0, 0)
+Ping.Position = UDim2.new(0, 10, 0, 40) -- Adjust position as needed
 Ping.Parent = ScreenGui
 
 local function updateStats()
