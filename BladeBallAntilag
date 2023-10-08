@@ -32,6 +32,13 @@ local function optimizeTerrain()
     terrain.WaveSpeed = 0
     terrain.WaveTransparency = 0
 
+    -- Disable fire effects
+    for _, fire in pairs(game.Workspace:FindPartsInRegion3(game.Workspace.CurrentCamera.CFrame:PointToWorldSpace(game.Workspace.CurrentCamera.CFrame.Position), game.Workspace.CurrentCamera.CFrame:PointToWorldSpace(game.Workspace.CurrentCamera.CFrame.Position + (game.Workspace.CurrentCamera.CFrame.LookVector * 100)), nil)) do
+        if fire:IsA("Fire") then
+            fire:Destroy()
+        end
+    end
+
     -- Adjust other rendering options to minimize lag
     game.Lighting:SetMinutesAfterMidnight(12 * 60) -- Set time to noon
     game.Lighting.GlobalShadows = false -- Disable global shadows
@@ -54,7 +61,7 @@ game:GetService("RunService").Stepped:Connect(function()
     updateMapMaterials()
 end)
 
--- FPS and Ping Counter
+-- FPS and Ping Counter (same code as before)
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = game.CoreGui
 
