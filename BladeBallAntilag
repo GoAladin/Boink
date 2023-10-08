@@ -1,4 +1,28 @@
 local workspace = game.Workspace
 local terrain = workspace.Terrain
-game.Lighting.FogEnd = 9e9
-game.Lighting:SetMinutesAfterMidnight(12 * 60)
+
+-- Disable water and water waves
+terrain.WaterWaveSize = 0
+terrain.WaterWaveSpeed = 0
+terrain.WaterReflectance = 0
+terrain.WaterTransparency = 0
+
+-- Additional water options to minimize lag
+terrain.WaterColor = Color3.new(0, 0, 0) -- Set water color to black (you can change the color if desired)
+terrain.WaterMurkiness = 0 -- Set water murkiness to 0
+terrain.WaterTransparency = 0 -- Set water transparency to 0
+terrain.RippleSize = 0 -- Set ripple size to 0
+terrain.WaveSize = 0 -- Set wave size to 0
+terrain.WaveSpeed = 0 -- Set wave speed to 0
+terrain.WaveTransparency = 0 -- Set wave transparency to 0
+
+-- Set the time of day lighting to avoid water reflections
+game.Lighting:SetMinutesAfterMidnight(12 * 60) -- Set time to noon
+
+-- Adjust other rendering options to minimize lag
+game.Lighting.GlobalShadows = false -- Disable global shadows
+game.Lighting.FogEnd = 9e9 -- Set fog end to a very high value to avoid fog
+game.Lighting.Brightness = 0 -- Set brightness to 0
+
+-- Set quality level to the lowest (Level01)
+settings().Rendering.QualityLevel = "Level01"
