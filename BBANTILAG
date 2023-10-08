@@ -7,13 +7,6 @@ local function setSmoothPlastic(part)
     end
 end
 
-local function updateMapMaterials()
-    -- Set all parts in the Workspace to SmoothPlastic
-    for _, part in ipairs(game.Workspace:GetDescendants()) do
-        setSmoothPlastic(part)
-    end
-end
-
 local function disableEffects()
     -- Disable water and water-related effects to reduce lag
     game.Workspace.Terrain:ClearAllWater()
@@ -34,6 +27,13 @@ local function disableEffects()
     game.Lighting.FogEnd = 9e9 -- Set fog end to a very high value to avoid fog
     game.Lighting.Brightness = 0 -- Set brightness to 0
     settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 -- Set quality level to the lowest (Level01)
+end
+
+local function updateMapMaterials()
+    -- Set all parts in the Workspace to SmoothPlastic
+    for _, part in ipairs(game.Workspace:GetDescendants()) do
+        setSmoothPlastic(part)
+    end
 end
 
 -- Initial run when the script is loaded
