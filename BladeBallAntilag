@@ -17,8 +17,32 @@ local function updateMapMaterials()
     end
 end
 
+local function optimizeTerrain()
+    local terrain = game.Workspace.Terrain
+
+    -- Disable water and water-related effects to reduce lag
+    terrain.WaterWaveSize = 0
+    terrain.WaterWaveSpeed = 0
+    terrain.WaterReflectance = 0
+    terrain.WaterTransparency = 0
+    terrain.WaterColor = Color3.new(0, 0, 0)
+    terrain.WaterMurkiness = 0
+    terrain.RippleSize = 0
+    terrain.WaveSize = 0
+    terrain.WaveSpeed = 0
+    terrain.WaveTransparency = 0
+
+    -- Adjust other rendering options to minimize lag
+    game.Lighting:SetMinutesAfterMidnight(12 * 60) -- Set time to noon
+    game.Lighting.GlobalShadows = false -- Disable global shadows
+    game.Lighting.FogEnd = 9e9 -- Set fog end to a very high value to avoid fog
+    game.Lighting.Brightness = 0 -- Set brightness to 0
+    settings().Rendering.QualityLevel = "Level01" -- Set quality level to the lowest (Level01)
+end
+
 -- Initial run when the script is loaded
 updateMapMaterials()
+optimizeTerrain()
 
 -- Update materials whenever a new part is added to the Workspace
 game.Workspace.DescendantAdded:Connect(function(descendant)
@@ -30,81 +54,41 @@ game:GetService("RunService").Stepped:Connect(function()
     updateMapMaterials()
 end)
 
--- Adjust game settings for anti-lag and smooth plastic appearance
-local workspace = game.Workspace
-local terrain = workspace.Terrain
-
--- Disable water and water waves
-terrain.WaterWaveSize = 0
-terrain.WaterWaveSpeed = 0
-terrain.WaterReflectance = 0
-terrain.WaterTransparency = 0
-
--- Additional water options to minimize lag
-terrain.WaterColor = Color3.new(0, 0, 0) -- Set water color to black (you can change the color if desired)
-terrain.WaterMurkiness = 0 -- Set water murkiness to 0
-terrain.RippleSize = 0 -- Set ripple size to 0
-terrain.WaveSize = 0 -- Set wave size to 0
-terrain.WaveSpeed = 0 -- Set wave speed to 0
-terrain.WaveTransparency = 0 -- Set wave transparency to 0
-
--- Set the time of day lighting to avoid water reflections
-game.Lighting:SetMinutesAfterMidnight(12 * 60) -- Set time to noon
-
--- Adjust other rendering options to minimize lag
-game.Lighting.GlobalShadows = false -- Disable global shadows
-game.Lighting.FogEnd = 9e9 -- Set fog end to a very high value to avoid fog
-game.Lighting.Brightness = 0 -- Set brightness to 0
-
--- Set quality level to the lowest (Level01)
-settings().Rendering.QualityLevel = "Level01"
--- FPS COUNTER
-repeat wait() until game:IsLoaded() wait(2)
+-- FPS and Ping Counter
 local ScreenGui = Instance.new("ScreenGui")
-local Fps = Instance.new("TextLabel")
-local Ping = Instance.new("TextLabel")
-
---Properties:
-
 ScreenGui.Parent = game.CoreGui
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-Fps.Name = "Fps"
-Fps.Parent = ScreenGui
-Fps.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Fps.BackgroundTransparency = 1.000
-Fps.Position = UDim2.new(0.786138654, 0, 0, 0)
+local Fps = Instance.new("TextLabel")
 Fps.Size = UDim2.new(0, 125, 0, 25)
 Fps.Font = Enum.Font.Arcade
 Fps.TextColor3 = Color3.fromRGB(255, 255, 255)
 Fps.TextScaled = true
 Fps.TextSize = 14.000
 Fps.TextWrapped = true
+Fps.Parent = ScreenGui
 
-Ping.Name = "Ping"
-Ping.Parent = ScreenGui
-Ping.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Ping.BackgroundTransparency = 1.000
-Ping.BorderColor3 = Color3.fromRGB(255, 255, 255)
-Ping.Position = UDim2.new(0.700000048, 0, 0, 0)
+local Ping = Instance.new("TextLabel")
 Ping.Size = UDim2.new(0, 125, 0, 25)
 Ping.Font = Enum.Font.Arcade
 Ping.TextColor3 = Color3.fromRGB(253, 253, 253)
 Ping.TextScaled = true
 Ping.TextSize = 14.000
 Ping.TextWrapped = true
+Ping.Position = UDim2.new(0.700000048, 0, 0, 0)
+Ping.Parent = ScreenGui
 
--- Scripts:
+local function updateStats()
+    while true do
+        local fps = math.round(1 / game.Workspace.DistributedGameTime) -- Calculate FPS
+        local ping = game:GetService("Stats"):FindFirstChild("Ping"):GetValueString() -- Get ping
+        
+        -- Update labels with FPS and ping information
+        Fps.Text = "FPS: " .. fps
+        Ping.Text = "Ping: " .. ping
+        
+        wait(1) -- Wait for 1 second before updating again
+    end
+end
 
-local script = Instance.new('LocalScript', Fps)
-local RunService = game:GetService("RunService")
-RunService.RenderStepped:Connect(function(frame) -- This will fire every time a frame is rendered
-script.Parent.Text = ("FPS: "..math.round(1/frame)) 
-end)
-
-
-local script = Instance.new('LocalScript', Ping)
-local RunService = game:GetService("RunService")
-RunService.RenderStepped:Connect(function(ping) 
-script.Parent.Text = ("Ping: " ..game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValueString(math.round(2/ping))) -- your ping
-end)
+-- Start the function to update stats in a separate thread to avoid blocking the main thread
+coroutine.wrap(updateStats)()
