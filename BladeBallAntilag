@@ -58,3 +58,5 @@ game.Lighting.Brightness = 0 -- Set brightness to 0
 
 -- Set quality level to the lowest (Level01)
 settings().Rendering.QualityLevel = "Level01"
+-- FPS COUNTER
+loadstring(game:HttpGet('https://raw.githubusercontent.com/1201for/littlegui/main/FPS-Counter'))()
