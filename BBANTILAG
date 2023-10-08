@@ -1,87 +1,105 @@
 local function setSmoothPlastic(part)
     if part:IsA("BasePart") then
-        -- Check if the part is not a player's character
         if not part:IsDescendantOf(game.Players.LocalPlayer.Character) then
-            part.Material = Enum.Material.SmoothPlastic -- Set material to SmoothPlastic
+            part.Material = Enum.Material.SmoothPlastic
         end
     end
 end
 
-local function disableEffects()
-    -- Disable water and water-related effects to reduce lag
-    game.Workspace.Terrain:ClearAllWater()
+local function removeEffects()
+    -- Remove water from terrain
+    local terrainWater = game.Workspace:FindPartsInRegion3(Region3.new(Vector3.new(-5000, -5000, -5000), Vector3.new(5000, 5000, 5000)), nil)
+    for _, waterPart in pairs(terrainWater) do
+        if waterPart:IsA("Water") or waterPart.Name == "Water" then
+            waterPart:Destroy()
+        end
+    end
 
-    -- Disable fire effects
-    for _, fire in pairs(game.Workspace:FindPartsInRegion3(
-        game.Workspace.CurrentCamera.CFrame.Position,
-        game.Workspace.CurrentCamera.CFrame.Position + game.Workspace.CurrentCamera.CFrame.LookVector * 100,
-        nil)) do
-        if fire:IsA("Fire") then
+    -- Remove fire and smoke effects
+    local fireList = game.Workspace:FindPartsInRegion3(
+        Region3.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + game.Workspace.CurrentCamera.CFrame.LookVector * 100),
+        nil
+    )
+    for _, fire in pairs(fireList) do
+        if fire:IsA("Fire") or fire:IsA("Smoke") then
             fire:Destroy()
         end
     end
 
-    -- Adjust other rendering options to minimize lag
-    game.Lighting:SetMinutesAfterMidnight(12 * 60) -- Set time to noon
-    game.Lighting.GlobalShadows = false -- Disable global shadows
-    game.Lighting.FogEnd = 9e9 -- Set fog end to a very high value to avoid fog
-    game.Lighting.Brightness = 0 -- Set brightness to 0
-    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 -- Set quality level to the lowest (Level01)
+    -- Remove other particle effects if needed
+    local particleList = game.Workspace:FindPartsInRegion3(
+        Region3.new(game.Workspace.CurrentCamera.CFrame.Position, game.Workspace.CurrentCamera.CFrame.Position + game.Workspace.CurrentCamera.CFrame.LookVector * 100),
+        nil
+    )
+    for _, particle in pairs(particleList) do
+        if particle:IsA("ParticleEmitter") or particle:IsA("Sparkles") or particle:IsA("Smoke") then
+            particle:Destroy()
+        end
+    end
+end
+
+local function optimizeMeshes()
+    local parts = game.Workspace:GetDescendants()
+    for _, part in ipairs(parts) do
+        if part:IsA("MeshPart") then
+            local originalMesh = part.MeshId
+            if originalMesh ~= "" then
+                part.MeshId = ""
+                wait(0.1)
+
+                local vertexCount = part:FindFirstChild("MeshPart").VertexCount
+                if vertexCount > 1000 then
+                    part.MeshId = originalMesh
+                    part:FindFirstChild("MeshPart").Scale = Vector3.new(0.5, 0.5, 0.5)
+                else
+                    part.MeshId = originalMesh
+                end
+            end
+        end
+    end
 end
 
 local function updateMapMaterials()
-    -- Get all parts in the Workspace
     local parts = game.Workspace:GetDescendants()
-
-    -- Set new parts to SmoothPlastic
     for _, part in ipairs(parts) do
         setSmoothPlastic(part)
     end
 end
 
--- Initial run when the script is loaded
-updateMapMaterials()
-disableEffects()
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
--- Update materials whenever a new part is added to the Workspace
-game.Workspace.DescendantAdded:Connect(setSmoothPlastic)
-
--- FPS and Ping Counter
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Parent = playerGui
 
 local Fps = Instance.new("TextLabel")
-Fps.Size = UDim2.new(0, 125, 0, 25)
-Fps.Font = Enum.Font.Arcade
-Fps.TextColor3 = Color3.fromRGB(255, 255, 255)
-Fps.TextScaled = true
-Fps.TextSize = 14
-Fps.TextWrapped = true
-Fps.Position = UDim2.new(0, 10, 0, 10) -- Adjust position as needed
-Fps.Parent = ScreenGui
+-- Your existing code for FPS counter
 
 local Ping = Instance.new("TextLabel")
-Ping.Size = UDim2.new(0, 125, 0, 25)
-Ping.Font = Enum.Font.Arcade
-Ping.TextColor3 = Color3.fromRGB(255, 255, 255)
-Ping.TextScaled = true
-Ping.TextSize = 14
-Ping.TextWrapped = true
-Ping.Position = UDim2.new(0, 10, 0, 40) -- Adjust position as needed
-Ping.Parent = ScreenGui
+-- Your existing code for Ping counter
+
+updateMapMaterials()
+removeEffects()
 
 local function updateStats()
     while true do
-        local fps = math.round(1 / (1 / game.Workspace:GetRealPhysicsFPS())) -- Calculate FPS using real physics FPS
-        local ping = game:GetService("Stats"):FindFirstChild("Ping"):GetValueString() -- Get ping
+        local fps = math.round(1 / (1 / game.Workspace:GetRealPhysicsFPS()))
+        local ping = game:GetService("Stats"):FindFirstChild("Ping"):GetValueString()
 
-        -- Update labels with FPS and ping information
         Fps.Text = "FPS: " .. fps
         Ping.Text = "Ping: " .. ping
 
-        wait(1) -- Wait for 1 second before updating again
+        wait(1)
     end
 end
 
--- Start the function to update stats in a separate thread to avoid blocking the main thread
+local function main()
+    while true do
+        optimizeMeshes()
+        removeEffects() -- Remove effects in every loop iteration
+        wait(1)
+    end
+end
+
 coroutine.wrap(updateStats)()
+coroutine.wrap(main)()
