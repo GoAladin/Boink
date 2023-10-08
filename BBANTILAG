@@ -12,8 +12,8 @@ end
 local function revertToSmoothPlastic(part)
     if part:IsA("BasePart") then
         part.Material = Enum.Material.SmoothPlastic -- Revert material to SmoothPlastic
-            part.CastShadow = false -- Disable shadows
-            part.Reflectance = 0 -- Remove reflectance
+        part.CastShadow = false -- Disable shadows
+        part.Reflectance = 0 -- Remove reflectance
     end
 end
 
