@@ -99,3 +99,96 @@ end
 
 -- Start the function to update stats in a separate thread to avoid blocking the main thread
 coroutine.wrap(updateStats)()
+
+local function setSmoothPlastic(part)
+    if part:IsA("MeshPart") or part:IsA("Part") then
+        if not part:IsDescendantOf(game.Players.LocalPlayer.Character) then
+            part.Material = Enum.Material.SmoothPlastic
+            part.Texture = "" -- Reset texture to remove any existing textures
+        end
+    end
+end
+
+local function optimizeTerrain()
+    local terrain = game.Workspace.Terrain
+
+    -- Clear water and water-related effects
+    terrain:ClearAllWater()
+
+    -- Disable fire effects
+    for _, fire in pairs(game.Workspace:FindPartsInRegion3(
+        game.Workspace.CurrentCamera.CFrame.Position,
+        game.Workspace.CurrentCamera.CFrame.Position + game.Workspace.CurrentCamera.CFrame.LookVector * 100,
+        nil)) do
+        if fire:IsA("Fire") then
+            fire:Destroy()
+        end
+    end
+
+    -- Adjust other rendering options to minimize lag
+    game.Lighting:SetMinutesAfterMidnight(12 * 60) -- Set time to noon
+    game.Lighting.GlobalShadows = false -- Disable global shadows
+    game.Lighting.FogEnd = 9e9 -- Set fog end to a very high value to avoid fog
+    game.Lighting.Brightness = 0 -- Set brightness to 0
+    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 -- Set quality level to the lowest (Level01)
+end
+
+local function updateMapMaterials()
+    local parts = game.Workspace:FindPartsInRegion3(
+        game.Workspace.CurrentCamera.CFrame.Position,
+        game.Workspace.CurrentCamera.CFrame.Position + game.Workspace.CurrentCamera.CFrame.LookVector * 100,
+        nil)
+
+    for _, part in ipairs(parts) do
+        setSmoothPlastic(part)
+    end
+end
+
+-- Initial run when the script is loaded
+updateMapMaterials()
+optimizeTerrain()
+
+-- Update materials whenever a new part is added to the Workspace
+game.Workspace.DescendantAdded:Connect(setSmoothPlastic)
+
+-- Continuously update materials using RunService.Heartbeat to catch any missed parts
+game:GetService("RunService").Heartbeat:Connect(updateMapMaterials)
+
+-- FPS and Ping Counter
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.CoreGui
+
+local Fps = Instance.new("TextLabel")
+Fps.Size = UDim2.new(0, 125, 0, 25)
+Fps.Font = Enum.Font.Arcade
+Fps.TextColor3 = Color3.fromRGB(255, 255, 255)
+Fps.TextScaled = true
+Fps.TextSize = 14
+Fps.TextWrapped = true
+Fps.Parent = ScreenGui
+
+local Ping = Instance.new("TextLabel")
+Ping.Size = UDim2.new(0, 125, 0, 25)
+Ping.Font = Enum.Font.Arcade
+Ping.TextColor3 = Color3.fromRGB(253, 253, 253)
+Ping.TextScaled = true
+Ping.TextSize = 14
+Ping.TextWrapped = true
+Ping.Position = UDim2.new(0.700000048, 0, 0, 0)
+Ping.Parent = ScreenGui
+
+local function updateStats()
+    while true do
+        local fps = math.round(1 / game.Workspace:GetRealPhysicsFPS()) -- Calculate FPS using real physics FPS
+        local ping = game:GetService("Stats"):FindFirstChild("Ping"):GetValueString() -- Get ping
+
+        -- Update labels with FPS and ping information
+        Fps.Text = "FPS: " .. fps
+        Ping.Text = "Ping: " .. ping
+
+        wait(1) -- Wait for 1 second before updating again
+    end
+end
+
+-- Start the function to update stats in a separate thread to avoid blocking the main thread
+coroutine.wrap(updateStats)()
