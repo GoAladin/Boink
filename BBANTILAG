@@ -30,8 +30,11 @@ local function disableEffects()
 end
 
 local function updateMapMaterials()
-    -- Set all parts in the Workspace to SmoothPlastic
-    for _, part in ipairs(game.Workspace:GetDescendants()) do
+    -- Get all parts in the Workspace
+    local parts = game.Workspace:GetDescendants()
+
+    -- Set new parts to SmoothPlastic
+    for _, part in ipairs(parts) do
         setSmoothPlastic(part)
     end
 end
