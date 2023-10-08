@@ -26,3 +26,36 @@ game.Lighting.Brightness = 0 -- Set brightness to 0
 
 -- Set quality level to the lowest (Level01)
 settings().Rendering.QualityLevel = "Level01"
+
+local function setSmoothPlastic(part)
+    if part:IsA("MeshPart") or part:IsA("Part") then
+        -- Check if the part is not a player's character
+        if not part:IsDescendantOf(game.Players.LocalPlayer.Character) then
+            part.Material = Enum.Material.SmoothPlastic -- Set material to SmoothPlastic
+        end
+    end
+end
+
+local function updateMapMaterials()
+    -- Get all parts in the Workspace
+    local parts = game.Workspace:GetDescendants()
+
+    -- Set non-player parts to SmoothPlastic
+    for _, part in ipairs(parts) do
+        setSmoothPlastic(part)
+    end
+end
+
+-- Initial run when the script is loaded
+updateMapMaterials()
+
+-- Update materials whenever a new part is added to the Workspace
+game.Workspace.DescendantAdded:Connect(function(descendant)
+    setSmoothPlastic(descendant)
+end)
+
+-- Continuously update materials using RunService.Stepped to catch any missed parts
+game:GetService("RunService").Stepped:Connect(function()
+    updateMapMaterials()
+end)
+
